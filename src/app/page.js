@@ -43,7 +43,6 @@ export default function Home() {
     });
 
     const data = await res.json();
-    console.log(data);
     if (data.shortUrl) {
       setShortUrl(`${window.location.origin}/${data.shortUrl}`);
     }
