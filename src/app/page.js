@@ -1,101 +1,156 @@
-import Image from "next/image";
+"use client";
+import { motion } from "framer-motion";
+
+import { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faLink, faCheck } from "@fortawesome/free-solid-svg-icons";
+import { faCopy } from "@fortawesome/free-regular-svg-icons";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [originalUrl, setOriginalUrl] = useState("");
+  const [shortUrl, setShortUrl] = useState("");
+  const [isCopied, setIsCopied] = useState(false);
+  const [isValidUrl, setIsValidUrl] = useState(true);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const validateUrl = (url) => {
+    const urlRegex = new RegExp(
+      /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(:\d+)?(\/.*)?$/
+    );
+    return urlRegex.test(url);
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(shortUrl);
+    setIsCopied(true);
+    setTimeout(() => {
+      setIsCopied(false);
+    }, 2000);
+  };
+
+  const handleSubmit = async (e) => {
+    if (!validateUrl(originalUrl)) {
+      setIsValidUrl(false);
+      return;
+    }
+    setIsValidUrl(true);
+
+    const res = await fetch("/api/shorten", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ originalUrl }),
+    });
+
+    const data = await res.json();
+    console.log(data);
+    if (data.shortUrl) {
+      setShortUrl(`${window.location.origin}/${data.shortUrl}`);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-customLightOrange px-8 py-10 md:px-16 md:py-20 lg:p-24 xl:p-28 2xl:p-28 flex flex-col justify-between">
+      <div className="top-div flex flex-row justify-between">
+        <p className="text-2xl md:text-3xl lg:text-4xl xl:text-4xl 2xl:text-4xl font-bold">
+          Shortly
+        </p>
+        <p className="text-2xl md:text-3xl lg:text-4xl xl:text-4xl 2xl:text-4xl font-medium text-customOrange">
+          /link shortener
+        </p>
+      </div>
+
+      <div className="middle-div mb-10 flex-grow flex flex-col items-center justify-center">
+        <div className="flex flex-col lg:flex-row items-center space-y-4 lg:space-y-0 lg:space-x-4 mb-6 w-full lg:w-3/4 xl:w-2/3 2xl:w-1/2">
+          <input
+            type="text"
+            value={originalUrl}
+            onChange={(e) => setOriginalUrl(e.target.value)}
+            placeholder="Enter the link"
+            required
+            className={
+              "placeholder-gray-500 text-sm md:text-base lg:text-base xl:text-base 2xl:text-base border px-6 md:px-8 lg:px-8 xl:px-8 2xl:px-8 h-14 shadow-lg rounded-full w-full lg:flex-grow focus:outline-none"
+            }
+          />
+          <motion.button
+            whileHover={validateUrl(originalUrl) ? { scale: 1.05 } : {}} // Only scale when valid
+            whileTap={{ scale: 0.95 }} // Slight shrink on press
+            onClick={handleSubmit}
+            type="button"
+            className={`text-sm md:text-base lg:text-base xl:text-base 2xl:text-base w-full lg:w-auto px-8 py-4 bg-customBlack shadow-lg rounded-full text-white text-medium transition-transform duration-200 ${
+              !validateUrl(originalUrl) ? "cursor-not-allowed" : ""
+            }`}
+            disabled={!validateUrl(originalUrl)}
           >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            Shorten
+          </motion.button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {!isValidUrl && (
+          <p className="text-red-500 text-sm mt-2">Please enter a valid URL.</p>
+        )}
+
+        <div className="relative mt-1 w-full lg:w-3/4 xl:w-2/3 2xl:w-1/2">
+          {shortUrl && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }} // Start slightly lower and transparent
+              animate={{ opacity: 1, y: 0 }} // Move up and fade in
+              exit={{ opacity: 0, y: 10 }} // Fade out and move down
+              transition={{ duration: 0.3 }}
+              className="absolute inset-x-0 border border-black flex items-center bg-transparent rounded-full h-14 pl-6 pr-0 md:pl-8 md:pr-1 lg:pl-8 lg:pr-1 xl:pl-8 xl:pr-1 2xl:pl-8 2xl:pr-1 w-full"
+            >
+              {/* Shortened URL and Link Icon */}
+              <div className="text-sm md:text-base lg:text-base xl:text-base 2xl:text-base flex-1 flex items-center space-x-2 overflow-hidden">
+                <FontAwesomeIcon
+                  icon={faLink}
+                  className="text-customOrange mr-1"
+                />
+                <a
+                  href={shortUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="truncate whitespace-nowrap overflow-hidden"
+                >
+                  {shortUrl}
+                </a>
+              </div>
+
+              {/* Copy Button with Left Border */}
+              <button
+                onClick={handleCopy}
+                className="text-sm md:text-base lg:text-base xl:text-base 2xl:text-base px-5 py-3 md:px-6 lg:px-6 xl:px-6 2xl:px-6 border-l border-black flex items-center space-x-2 h-full"
+              >
+                {isCopied ? (
+                  <>
+                    <FontAwesomeIcon
+                      icon={faCheck}
+                      className="text-customOrange"
+                    />
+                    <span className="hidden lg:inline-block">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <FontAwesomeIcon
+                      icon={faCopy}
+                      className="text-customOrange"
+                    />
+                    <span className="hidden lg:inline-block">Copy</span>
+                  </>
+                )}
+              </button>
+            </motion.div>
+          )}
+        </div>
+      </div>
+
+      <div className="bottom-div flex flex-row justify-between">
+        <p className="text-lg md:text-xl lg:text-2xl xl:text-2xl 2xl:text-2xl font-medium">
+          Your link, but shorter
+        </p>
+        <p className="text-lg md:text-xl lg:text-2xl xl:text-2xl 2xl:text-2xl font-medium">
+          2024
+        </p>
+      </div>
     </div>
   );
 }
