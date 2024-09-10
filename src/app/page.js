@@ -50,7 +50,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-customLightOrange px-8 py-10 md:px-16 md:py-20 lg:p-24 xl:p-28 2xl:p-28 flex flex-col justify-between">
+    <div className="min-h-[100dvh] max-h-[100dvh] h-[100dvh] bg-customLightOrange px-8 py-10 md:px-16 md:py-20 lg:p-24 xl:p-28 2xl:p-28 flex flex-col justify-between">
       <div className="top-div flex flex-row justify-between">
         <p className="text-2xl md:text-3xl lg:text-4xl xl:text-4xl 2xl:text-4xl font-bold">
           Shortly
