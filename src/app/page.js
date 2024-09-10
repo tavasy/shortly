@@ -11,6 +11,7 @@ export default function Home() {
   const [shortUrl, setShortUrl] = useState("");
   const [isCopied, setIsCopied] = useState(false);
   const [isValidUrl, setIsValidUrl] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const validateUrl = (url) => {
     const urlRegex = new RegExp(
@@ -33,18 +34,25 @@ export default function Home() {
       return;
     }
     setIsValidUrl(true);
+    setLoading(true);
 
-    const res = await fetch("/api/shorten", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ originalUrl }),
-    });
+    try {
+      const res = await fetch("/api/shorten", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ originalUrl }),
+      });
 
-    const data = await res.json();
-    if (data.shortUrl) {
-      setShortUrl(`${window.location.origin}/${data.shortUrl}`);
+      const data = await res.json();
+      if (data.shortUrl) {
+        setShortUrl(`${window.location.origin}/${data.shortUrl}`);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -72,8 +80,8 @@ export default function Home() {
             }
           />
           <motion.button
-            whileHover={validateUrl(originalUrl) ? { scale: 1.05 } : {}} // Only scale when valid
-            whileTap={{ scale: 0.95 }} // Slight shrink on press
+            whileHover={validateUrl(originalUrl) ? { scale: 1.05 } : {}}
+            whileTap={{ scale: 0.95 }}
             onClick={handleSubmit}
             type="button"
             className={`text-sm md:text-base lg:text-base xl:text-base 2xl:text-base w-full lg:w-auto px-8 py-4 bg-customBlack shadow-lg rounded-full text-white text-medium transition-transform duration-200 ${
@@ -90,54 +98,60 @@ export default function Home() {
         )}
 
         <div className="relative mt-1 w-full lg:w-3/4 xl:w-2/3 2xl:w-1/2">
-          {shortUrl && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }} // Start slightly lower and transparent
-              animate={{ opacity: 1, y: 0 }} // Move up and fade in
-              exit={{ opacity: 0, y: 10 }} // Fade out and move down
-              transition={{ duration: 0.3 }}
-              className="absolute inset-x-0 border border-black flex items-center bg-transparent rounded-full h-14 pl-6 pr-0 md:pl-8 md:pr-1 lg:pl-8 lg:pr-1 xl:pl-8 xl:pr-1 2xl:pl-8 2xl:pr-1 w-full"
-            >
-              {/* Shortened URL and Link Icon */}
-              <div className="text-sm md:text-base lg:text-base xl:text-base 2xl:text-base flex-1 flex items-center space-x-2 overflow-hidden">
-                <FontAwesomeIcon
-                  icon={faLink}
-                  className="text-customOrange mr-1"
-                />
-                <a
-                  href={shortUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="truncate whitespace-nowrap overflow-hidden"
-                >
-                  {shortUrl}
-                </a>
-              </div>
-
-              {/* Copy Button with Left Border */}
-              <button
-                onClick={handleCopy}
-                className="text-sm md:text-base lg:text-base xl:text-base 2xl:text-base px-5 py-3 md:px-6 lg:px-6 xl:px-6 2xl:px-6 border-l border-black flex items-center space-x-2 h-full"
+          {loading ? (
+            <div className="flex justify-center space-x-1">
+              <div className="w-2 h-2 lg:w-3 lg:h-3 xl:w-3 xl:h-3 2xl:w-3 2xl:h-3 bg-gray-500 rounded-full dot"></div>
+              <div className="w-2 h-2 lg:w-3 lg:h-3 xl:w-3 xl:h-3 2xl:w-3 2xl:h-3 bg-gray-500 rounded-full dot"></div>
+              <div className="w-2 h-2 lg:w-3 lg:h-3 xl:w-3 xl:h-3 2xl:w-3 2xl:h-3 bg-gray-500 rounded-full dot"></div>
+            </div>
+          ) : (
+            shortUrl && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.3 }}
+                className="absolute inset-x-0 border border-black flex items-center bg-transparent rounded-full h-14 pl-6 pr-0 md:pl-8 md:pr-1 lg:pl-8 lg:pr-1 xl:pl-8 xl:pr-1 2xl:pl-8 2xl:pr-1 w-full"
               >
-                {isCopied ? (
-                  <>
-                    <FontAwesomeIcon
-                      icon={faCheck}
-                      className="text-customOrange"
-                    />
-                    <span className="hidden lg:inline-block">Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <FontAwesomeIcon
-                      icon={faCopy}
-                      className="text-customOrange"
-                    />
-                    <span className="hidden lg:inline-block">Copy</span>
-                  </>
-                )}
-              </button>
-            </motion.div>
+                <div className="text-sm md:text-base lg:text-base xl:text-base 2xl:text-base flex-1 flex items-center space-x-2 overflow-hidden">
+                  <FontAwesomeIcon
+                    icon={faLink}
+                    className="text-customOrange mr-1"
+                  />
+                  <a
+                    href={shortUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="truncate whitespace-nowrap overflow-hidden"
+                  >
+                    {shortUrl}
+                  </a>
+                </div>
+
+                <button
+                  onClick={handleCopy}
+                  className="text-sm md:text-base lg:text-base xl:text-base 2xl:text-base px-5 py-3 md:px-6 lg:px-6 xl:px-6 2xl:px-6 border-l border-black flex items-center space-x-2 h-full"
+                >
+                  {isCopied ? (
+                    <>
+                      <FontAwesomeIcon
+                        icon={faCheck}
+                        className="text-customOrange"
+                      />
+                      <span className="hidden lg:inline-block">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <FontAwesomeIcon
+                        icon={faCopy}
+                        className="text-customOrange"
+                      />
+                      <span className="hidden lg:inline-block">Copy</span>
+                    </>
+                  )}
+                </button>
+              </motion.div>
+            )
           )}
         </div>
       </div>
