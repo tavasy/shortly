@@ -3,7 +3,12 @@ import { motion } from "framer-motion";
 
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLink, faCheck } from "@fortawesome/free-solid-svg-icons";
+import {
+  faLink,
+  faCheck,
+  faHashtag,
+  faHSquare,
+} from "@fortawesome/free-solid-svg-icons";
 import { faCopy } from "@fortawesome/free-regular-svg-icons";
 
 export default function Home() {
@@ -68,7 +73,20 @@ export default function Home() {
       </div>
 
       <div className="middle-div mb-10 flex-grow flex flex-col items-center justify-center">
-        <div className="flex flex-col lg:flex-row items-center space-y-4 lg:space-y-0 lg:space-x-4 mb-6 w-full lg:w-3/4 xl:w-2/3 2xl:w-1/2">
+        <div className="flex justify-start w-full lg:w-3/4 xl:w-2/3 2xl:w-1/2 mb-4">
+          <button
+            onClick={() =>
+              setOriginalUrl(
+                "https://en.wikipedia.org/wiki/List_of_tallest_buildings_and_structures_in_the_Paris_region"
+              )
+            }
+            className="text-xs md:text-sm lg:text-sm xl:text-sm 2xl:text-sm bg-transparent px-4 py-2 text-gray-700 rounded-full border border-gray-400"
+          >
+            <FontAwesomeIcon icon={faHashtag} className="mr-1" />
+            Example link
+          </button>
+        </div>
+        <div className="flex flex-col lg:flex-row items-center space-y-4 lg:space-y-0 lg:space-x-4 mb-4 w-full lg:w-3/4 xl:w-2/3 2xl:w-1/2">
           <input
             type="text"
             value={originalUrl}
